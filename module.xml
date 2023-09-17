@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+  <Document name="vector.ZPM">
+    <Module>
+      <Name>vector</Name>
+      <Version>0.1.0</Version>
+      <Keywords>vector</Keywords>
+      <Description></Description>
+      <Packaging>module</Packaging>
+      <SourcesRoot>src</SourcesRoot>
+      <Resource Name="dc.vector.init.cls" Preload="1"/>
+      <Resource Name="dc.vector.PKG"/>
+      <Invoke Class="dc.vector.init" Method="Init" Phase="Compile" When="Before" CheckStatus="true" />
+      <UnitTest Name="/tests/unit_tests/" Package="test" Phase="test"/>
+    </Module>
+  </Document>
+</Export>

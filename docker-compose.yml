@@ -1,0 +1,22 @@
+version: "3"
+services:
+  iris:
+    restart: unless-stopped
+    image: intersystemsdc/iris-community
+    ports:
+      - 9273:52773
+      - 9272:1972
+    working_dir: /home/irisowner/app
+    volumes:
+      - ./init.db:/docker-entrypoint-initdb.d/
+      - ./iris_vector:/usr/irissys/lib/python/iris_vector
+      - ./:/home/irisowner/app
+    environment:
+      - IRISUSERNAME=_SYSTEM
+      - IRISPASSWORD=SYS
+  jupiter:
+    image: jupyter/minimal-notebook 
+    ports:
+      - 9288:8888
+
+
