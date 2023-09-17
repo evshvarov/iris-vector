@@ -57,6 +57,18 @@ ClassMethod l2Distance(v1 As dc.vector.type, v2 As dc.vector.type) As %Decimal(S
     quit $zsqr(distance)
 }
 
+ClassMethod l2DistancePy(v1 As dc.vector.type, v2 As dc.vector.type) As %Decimal(SCALE=10) [ Language = python, SqlName = l2_distance_py, SqlProc ]
+{
+    import iris 
+    import math
+    
+    vector_type = iris.cls('dc.vector.type')
+    v1 = iris.cls('%SYS.Python').ToList(vector_type.Normalize(v1))
+    v2 = iris.cls('%SYS.Python').ToList(vector_type.Normalize(v2))
+
+    return math.sqrt(sum([(val1 - val2) ** 2 for val1, val2 in zip(v1, v2)]))
+}
+
 ClassMethod cosineDistance(v1 As dc.vector.type, v2 As dc.vector.type) As %Decimal(SCALE=10) [ SqlName = cosine_distance, SqlProc ]
 {
     do ..NormalizeAndCheck(.v1, .v2, .dims)
@@ -77,6 +89,26 @@ ClassMethod cosineDistance(v1 As dc.vector.type, v2 As dc.vector.type) As %Decim
     quit 1 - similarity
 }
 
+ClassMethod cosineDistancePy(v1 As dc.vector.type, v2 As dc.vector.type) As %Decimal(SCALE=10) [ Language = python, SqlName = cosine_distance_py, SqlProc ]
+{
+    import iris 
+    import math
+    
+    vector_type = iris.cls('dc.vector.type')
+    v1 = iris.cls('%SYS.Python').ToList(vector_type.Normalize(v1))
+    v2 = iris.cls('%SYS.Python').ToList(vector_type.Normalize(v2))
+
+    distance = norm1 = norm2 = 0
+    for val1, val2 in zip(v1, v2):
+        distance += (val1 * val2)
+        norm1 += (val1 * val1)
+        norm2 += (val2 * val2)
+
+    similarity = distance / math.sqrt(norm1 * norm2)
+
+    return 1 - (1 if similarity > 1 else -1 if similarity < -1 else similarity)
+}
+
 ClassMethod innerProduct(v1 As dc.vector.type, v2 As dc.vector.type) As %Decimal(SCALE=10) [ SqlName = inner_product, SqlProc ]
 {
     do ..NormalizeAndCheck(.v1, .v2, .dims)
@@ -93,6 +125,17 @@ ClassMethod innerProduct(v1 As dc.vector.type, v2 As dc.vector.type) As %Decimal
     quit distance
 }
 
+ClassMethod innerProductPy(v1 As dc.vector.type, v2 As dc.vector.type) As %Decimal(SCALE=10) [ Language = python, SqlName = inner_product_py, SqlProc ]
+{
+    import iris 
+    
+    vector_type = iris.cls('dc.vector.type')
+    v1 = iris.cls('%SYS.Python').ToList(vector_type.Normalize(v1))
+    v2 = iris.cls('%SYS.Python').ToList(vector_type.Normalize(v2))
+
+    return sum([val1 * val2 for val1, val2 in zip(v1, v2)])
+}
+
 /// CREATE or REPLACE AGGREGATE vector_sum(arg vector) ITERATE WITH vector.vector_add
 /// 
 /// NOTE: does work as AGGREGATE at all
@@ -105,6 +148,87 @@ ClassMethod add(v1 As dc.vector.type, v2 As dc.vector.type) As dc.vector.type [ 
     }
 
     quit v1
+}
+
+ClassMethod addPy(v1 As dc.vector.type, v2 As dc.vector.type) As dc.vector.type [ Language = python, SqlName = vector_add_py, SqlProc ]
+{
+    import iris 
+    from iris_dollar_list import DollarList
+    
+    vector_type = iris.cls('dc.vector.type')
+    v1 = iris.cls('%SYS.Python').ToList(vector_type.Normalize(v1))
+    v2 = iris.cls('%SYS.Python').ToList(vector_type.Normalize(v2))
+
+    return DollarList.from_list([val1 + val2 for val1, val2 in zip(v1, v2)]).to_bytes()
+}
+
+ClassMethod sub(v1 As dc.vector.type, v2 As dc.vector.type) As dc.vector.type [ SqlName = vector_sub, SqlProc ]
+{
+    do ..NormalizeAndCheck(.v1, .v2, .dims)
+
+    for i=1:1:dims {
+        set $list(v1, i) = $list(v1, i) - $list(v2, i)
+    }
+
+    quit v1
+}
+
+ClassMethod subPy(v1 As dc.vector.type, v2 As dc.vector.type) As dc.vector.type [ Language = python, SqlName = vector_sub_py, SqlProc ]
+{
+    import iris 
+    from iris_dollar_list import DollarList
+    
+    vector_type = iris.cls('dc.vector.type')
+    v1 = iris.cls('%SYS.Python').ToList(vector_type.Normalize(v1))
+    v2 = iris.cls('%SYS.Python').ToList(vector_type.Normalize(v2))
+
+    return DollarList.from_list([val1 - val2 for val1, val2 in zip(v1, v2)]).to_bytes()
+}
+
+ClassMethod mul(v1 As dc.vector.type, v2 As dc.vector.type) As dc.vector.type [ SqlName = vector_mul, SqlProc ]
+{
+    do ..NormalizeAndCheck(.v1, .v2, .dims)
+
+    for i=1:1:dims {
+        set $list(v1, i) = $list(v1, i) * $list(v2, i)
+    }
+
+    quit v1
+}
+
+ClassMethod mulPy(v1 As dc.vector.type, v2 As dc.vector.type) As dc.vector.type [ Language = python, SqlName = vector_mul_py, SqlProc ]
+{
+    import iris 
+    from iris_dollar_list import DollarList
+    
+    vector_type = iris.cls('dc.vector.type')
+    v1 = iris.cls('%SYS.Python').ToList(vector_type.Normalize(v1))
+    v2 = iris.cls('%SYS.Python').ToList(vector_type.Normalize(v2))
+
+    return DollarList.from_list([val1 * val2 for val1, val2 in zip(v1, v2)]).to_bytes()
+}
+
+ClassMethod div(v1 As dc.vector.type, v2 As dc.vector.type) As dc.vector.type [ SqlName = vector_div, SqlProc ]
+{
+    do ..NormalizeAndCheck(.v1, .v2, .dims)
+
+    for i=1:1:dims {
+        set $list(v1, i) = $list(v1, i) / $list(v2, i)
+    }
+
+    quit v1
+}
+
+ClassMethod divPy(v1 As dc.vector.type, v2 As dc.vector.type) As dc.vector.type [ Language = python, SqlName = vector_div_py, SqlProc ]
+{
+    import iris 
+    from iris_dollar_list import DollarList
+    
+    vector_type = iris.cls('dc.vector.type')
+    v1 = iris.cls('%SYS.Python').ToList(vector_type.Normalize(v1))
+    v2 = iris.cls('%SYS.Python').ToList(vector_type.Normalize(v2))
+
+    return DollarList.from_list([val1 / val2 for val1, val2 in zip(v1, v2)]).to_bytes()
 }
 
 }
