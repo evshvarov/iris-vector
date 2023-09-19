@@ -5,7 +5,11 @@
         "port": 9273,
         "username": "_SYSTEM",
         "password": "SYS",
-        "ns": "USER"
+        "ns": "USER",
+        "docker-compose": {
+            "service": "iris",
+            "internalPort": 52773
+        }
     },
     "intersystems.testingManager.client.relativeTestRoot": "tests/unit_tests",
 }
